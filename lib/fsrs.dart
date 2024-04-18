@@ -4,5 +4,6 @@
 library;
 
 export 'src/fsrs_base.dart';
+export 'src/utils.dart';
 
 // TODO: Export any libraries intended for clients of this package.

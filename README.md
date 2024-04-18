@@ -1,43 +1,78 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## About The Project
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+dart-fsrs is a Dart Package implements [Free Spaced Repetition Scheduler algorithm](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler). It helps developers apply FSRS in their flashcard apps.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+## Getting Started
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```
+dart pub add fsrs
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
-
+Create a card and review it at a given time:
 ```dart
-const like = 'sample';
+import 'package:fsrs/fsrs.dart';
+
+var f = FSRS();
+var card = Card();
+var now = DateTime(2022, 11, 29, 12, 30, 0, 0);
+var schedulingCards = f.repeat(card, now);
+printSchedulingCards(schedulingCards);
 ```
 
-## Additional information
+There are four ratings:
+```dart
+Rating.Again; // forget; incorrect response
+Rating.Hard; // recall; correct response recalled with serious difficulty
+Rating.Good; // recall; correct response after a hesitation
+Rating.Easy; // recall; perfect response
+```
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
 
-## Info: 
+Get the new state of card for each rating:
+```dart
+var cardAgain = schedulingCards[Rating.Again]!.card;
+var cardHard = schedulingCards[Rating.Hard]!.card;
+var cardGood = schedulingCards[Rating.Good]!.card;
+var cardEasy = schedulingCards[Rating.Easy]!.card;
+```
+
+Get the scheduled days for each rating:
+```dart
+cardAgain.scheduledDays;
+cardHard.scheduledDays;
+cardGood.scheduledDays;
+cardEasy.scheduledDays;
+```
+
+Update the card after rating `Good`:
+```dart
+card = schedulingCards[Rating.Good]!.card;
+```
+
+Get the review log after rating `Good`:
+```dart
+var reviewLog = schedulingCards[Rating.Good]!.reviewLog;
+```
+
+Get the due date for card:
+```dart
+due = card.due
+```
+
+There are four states:
+```dart
+State.New; // Never been studied
+State.Learning; // Been studied for the first time recently
+State.Review; // Graduate from learning state
+State.Relearning; // Forgotten in review state
+```
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+## More Info: 
 Port from git@github.com:open-spaced-repetition/py-fsrs.git
 commit: 1b4cbe4
