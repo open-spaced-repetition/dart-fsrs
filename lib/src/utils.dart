@@ -1,4 +1,4 @@
-import './fsrs_base.dart';
+import './models.dart';
 
 void printSchedulingCards(Map<Rating, SchedulingInfo> schedulingCards) {
   print("again.card: ${schedulingCards[Rating.Again]?.card}");

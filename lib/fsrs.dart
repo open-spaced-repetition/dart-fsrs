@@ -3,6 +3,7 @@
 /// More dartdocs go here.
 library;
 
+export 'src/models.dart';
 export 'src/fsrs_base.dart';
 export 'src/utils.dart';
 
