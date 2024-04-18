@@ -29,9 +29,11 @@ void main() {
   card = schedulingCards[Rating.Good]!.card;
 
   // Get the review log after rating `Good`:
+  // ignore: unused_local_variable
   var reviewLog = schedulingCards[Rating.Good]!.reviewLog;
 
   // Get the due date for card:
+  // ignore: unused_local_variable
   var due = card.due;
 
   // There are four states:
