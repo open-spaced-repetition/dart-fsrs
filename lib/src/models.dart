@@ -45,9 +45,13 @@ class ReviewLog {
   }
 }
 
+/// Store card data
 class Card {
+  /// The time when the card is scheduled to be reviewed again
   late DateTime due;
   double stability = 0;
+
+  /// How challenging or easy you find a specific flashcard during a review session
   double difficulty = 0;
   int elapsedDays = 0;
   int scheduledDays = 0;
@@ -71,12 +75,13 @@ class Card {
     });
   }
 
+  /// Construct current time for due and last review
   Card() {
     due = DateTime.now().toUtc();
     lastReview = DateTime.now().toUtc();
   }
 
-  // .from Constructor for copying
+  /// Helper to clone from a card
   factory Card.copyFrom(Card card) {
     Card newCard = Card();
     newCard.due = card.due;
@@ -105,6 +110,7 @@ class Card {
   }
 }
 
+/// Store card and review log info
 class SchedulingInfo {
   late Card card;
   late ReviewLog reviewLog;
@@ -112,6 +118,7 @@ class SchedulingInfo {
   SchedulingInfo(this.card, this.reviewLog);
 }
 
+/// Calculate next review
 class SchedulingCards {
   late Card again;
   late Card hard;
