@@ -23,19 +23,19 @@ printSchedulingCards(schedulingCards);
 
 There are four ratings:
 ```dart
-Rating.Again; // forget; incorrect response
-Rating.Hard; // recall; correct response recalled with serious difficulty
-Rating.Good; // recall; correct response after a hesitation
-Rating.Easy; // recall; perfect response
+Rating.again; // forget; incorrect response
+Rating.hard; // recall; correct response recalled with serious difficulty
+Rating.good; // recall; correct response after a hesitation
+Rating.easy; // recall; perfect response
 ```
 
 
 Get the new state of card for each rating:
 ```dart
-var cardAgain = schedulingCards[Rating.Again]!.card;
-var cardHard = schedulingCards[Rating.Hard]!.card;
-var cardGood = schedulingCards[Rating.Good]!.card;
-var cardEasy = schedulingCards[Rating.Easy]!.card;
+var cardAgain = schedulingCards[Rating.again]!.card;
+var cardHard = schedulingCards[Rating.hard]!.card;
+var cardGood = schedulingCards[Rating.good]!.card;
+var cardEasy = schedulingCards[Rating.easy]!.card;
 ```
 
 Get the scheduled days for each rating:
@@ -48,12 +48,12 @@ cardEasy.scheduledDays;
 
 Update the card after rating `Good`:
 ```dart
-card = schedulingCards[Rating.Good]!.card;
+card = schedulingCards[Rating.good]!.card;
 ```
 
 Get the review log after rating `Good`:
 ```dart
-var reviewLog = schedulingCards[Rating.Good]!.reviewLog;
+var reviewLog = schedulingCards[Rating.good]!.reviewLog;
 ```
 
 Get the due date for card:
@@ -63,10 +63,10 @@ due = card.due
 
 There are four states:
 ```dart
-State.New; // Never been studied
-State.Learning; // Been studied for the first time recently
-State.Review; // Graduate from learning state
-State.Relearning; // Forgotten in review state
+State.newState; // Never been studied
+State.learning; // Been studied for the first time recently
+State.review; // Graduate from learning state
+State.relearning; // Forgotten in review state
 ```
 
 ## License
