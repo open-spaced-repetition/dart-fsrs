@@ -15,7 +15,7 @@ class FSRS {
 
   Map<Rating, SchedulingInfo> repeat(Card card, DateTime now) {
     card = Card.copyFrom(card);
-    if (card.state == State.New) {
+    if (card.state == State.newState) {
       card.elapsedDays = 0;
     } else {
       card.elapsedDays = now.difference(card.lastReview).inDays;
@@ -26,7 +26,7 @@ class FSRS {
     final s = SchedulingCards(card);
     s.updateState(card.state);
 
-    if (card.state == State.New) {
+    if (card.state == State.newState) {
       _initDS(s);
 
       s.again.due = now.add(Duration(minutes: 1));
@@ -35,7 +35,7 @@ class FSRS {
       final easyInterval = _nextInterval(s.easy.stability);
       s.easy.scheduledDays = easyInterval;
       s.easy.due = now.add(Duration(days: easyInterval));
-    } else if (card.state == State.Learning || card.state == State.Relearning) {
+    } else if (card.state == State.learning || card.state == State.relearning) {
       final hardInterval = 0;
       final goodInterval = _nextInterval(s.good.stability);
       final easyInterval =
@@ -43,7 +43,7 @@ class FSRS {
 
       s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
           easyInterval.toDouble());
-    } else if (card.state == State.Review) {
+    } else if (card.state == State.review) {
       final interval = card.elapsedDays;
       final lastD = card.difficulty;
       final lastS = card.stability;
@@ -63,14 +63,14 @@ class FSRS {
   }
 
   void _initDS(SchedulingCards s) {
-    s.again.difficulty = _initDifficulty(Rating.Again.val);
-    s.again.stability = _initStability(Rating.Again.val);
-    s.hard.difficulty = _initDifficulty(Rating.Hard.val);
-    s.hard.stability = _initStability(Rating.Hard.val);
-    s.good.difficulty = _initDifficulty(Rating.Good.val);
-    s.good.stability = _initStability(Rating.Good.val);
-    s.easy.difficulty = _initDifficulty(Rating.Easy.val);
-    s.easy.stability = _initStability(Rating.Easy.val);
+    s.again.difficulty = _initDifficulty(Rating.again.val);
+    s.again.stability = _initStability(Rating.again.val);
+    s.hard.difficulty = _initDifficulty(Rating.hard.val);
+    s.hard.stability = _initStability(Rating.hard.val);
+    s.good.difficulty = _initDifficulty(Rating.good.val);
+    s.good.stability = _initStability(Rating.good.val);
+    s.easy.difficulty = _initDifficulty(Rating.easy.val);
+    s.easy.stability = _initStability(Rating.easy.val);
   }
 
   double _initStability(int r) {
@@ -100,8 +100,8 @@ class FSRS {
   }
 
   double _nextRecallStability(double d, double s, double r, Rating rating) {
-    final hardPenalty = (rating == Rating.Hard) ? p.w[15] : 1;
-    final easyBonus = (rating == Rating.Easy) ? p.w[16] : 1;
+    final hardPenalty = (rating == Rating.hard) ? p.w[15] : 1;
+    final easyBonus = (rating == Rating.easy) ? p.w[16] : 1;
     return s *
         (1 +
             exp(p.w[8]) *
@@ -121,16 +121,16 @@ class FSRS {
 
   void _nextDS(
       SchedulingCards s, double lastD, double lastS, double retrievability) {
-    s.again.difficulty = _nextDifficulty(lastD, Rating.Again.val);
+    s.again.difficulty = _nextDifficulty(lastD, Rating.again.val);
     s.again.stability = _nextForgetStability(lastD, lastS, retrievability);
-    s.hard.difficulty = _nextDifficulty(lastD, Rating.Hard.val);
+    s.hard.difficulty = _nextDifficulty(lastD, Rating.hard.val);
     s.hard.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.Hard);
-    s.good.difficulty = _nextDifficulty(lastD, Rating.Good.val);
+        _nextRecallStability(lastD, lastS, retrievability, Rating.hard);
+    s.good.difficulty = _nextDifficulty(lastD, Rating.good.val);
     s.good.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.Good);
-    s.easy.difficulty = _nextDifficulty(lastD, Rating.Easy.val);
+        _nextRecallStability(lastD, lastS, retrievability, Rating.good);
+    s.easy.difficulty = _nextDifficulty(lastD, Rating.easy.val);
     s.easy.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.Easy);
+        _nextRecallStability(lastD, lastS, retrievability, Rating.easy);
   }
 }

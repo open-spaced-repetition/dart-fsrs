@@ -1,14 +1,12 @@
-// ignore_for_file: constant_identifier_names
-
 import 'dart:core';
 import 'dart:math';
 import 'dart:convert';
 
 enum State {
-  New(0),
-  Learning(1),
-  Review(2),
-  Relearning(3);
+  newState(0),
+  learning(1),
+  review(2),
+  relearning(3);
 
   const State(this.val);
 
@@ -16,10 +14,10 @@ enum State {
 }
 
 enum Rating {
-  Again(1),
-  Hard(2),
-  Good(3),
-  Easy(4);
+  again(1),
+  hard(2),
+  good(3),
+  easy(4);
 
   const Rating(this.val);
 
@@ -55,7 +53,7 @@ class Card {
   int scheduledDays = 0;
   int reps = 0;
   int lapses = 0;
-  State state = State.New;
+  State state = State.newState;
   late DateTime lastReview;
 
   @override
@@ -97,7 +95,7 @@ class Card {
     const decay = -0.5;
     final factor = pow(0.9, 1 / decay) - 1;
 
-    if (state == State.Review) {
+    if (state == State.review) {
       final elapsedDays =
           (now.difference(lastReview).inDays).clamp(0, double.infinity).toInt();
       return pow(1 + factor * elapsedDays / stability, decay).toDouble();
@@ -128,21 +126,21 @@ class SchedulingCards {
   }
 
   void updateState(State state) {
-    if (state == State.New) {
-      again.state = State.Learning;
-      hard.state = State.Learning;
-      good.state = State.Learning;
-      easy.state = State.Review;
-    } else if (state == State.Learning || state == State.Relearning) {
+    if (state == State.newState) {
+      again.state = State.learning;
+      hard.state = State.learning;
+      good.state = State.learning;
+      easy.state = State.review;
+    } else if (state == State.learning || state == State.relearning) {
       again.state = state;
       hard.state = state;
-      good.state = State.Review;
-      easy.state = State.Review;
-    } else if (state == State.Review) {
-      again.state = State.Relearning;
-      hard.state = State.Review;
-      good.state = State.Review;
-      easy.state = State.Review;
+      good.state = State.review;
+      easy.state = State.review;
+    } else if (state == State.review) {
+      again.state = State.relearning;
+      hard.state = State.review;
+      good.state = State.review;
+      easy.state = State.review;
       again.lapses++;
     }
   }
@@ -163,21 +161,21 @@ class SchedulingCards {
 
   Map<Rating, SchedulingInfo> recordLog(Card card, DateTime now) {
     return {
-      Rating.Again: SchedulingInfo(
+      Rating.again: SchedulingInfo(
           again,
-          ReviewLog(Rating.Again, again.scheduledDays, card.elapsedDays, now,
+          ReviewLog(Rating.again, again.scheduledDays, card.elapsedDays, now,
               card.state)),
-      Rating.Hard: SchedulingInfo(
+      Rating.hard: SchedulingInfo(
           hard,
-          ReviewLog(Rating.Hard, hard.scheduledDays, card.elapsedDays, now,
+          ReviewLog(Rating.hard, hard.scheduledDays, card.elapsedDays, now,
               card.state)),
-      Rating.Good: SchedulingInfo(
+      Rating.good: SchedulingInfo(
           good,
-          ReviewLog(Rating.Good, good.scheduledDays, card.elapsedDays, now,
+          ReviewLog(Rating.good, good.scheduledDays, card.elapsedDays, now,
               card.state)),
-      Rating.Easy: SchedulingInfo(
+      Rating.easy: SchedulingInfo(
           easy,
-          ReviewLog(Rating.Easy, easy.scheduledDays, card.elapsedDays, now,
+          ReviewLog(Rating.easy, easy.scheduledDays, card.elapsedDays, now,
               card.state)),
     };
   }
