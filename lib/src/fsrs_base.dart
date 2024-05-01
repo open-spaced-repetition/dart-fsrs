@@ -14,7 +14,7 @@ class FSRS {
   }
 
   Map<Rating, SchedulingInfo> repeat(Card card, DateTime now) {
-    card = Card.copyFrom(card);
+    card = card.copyWith();
     if (card.state == State.newState) {
       card.elapsedDays = 0;
     } else {
