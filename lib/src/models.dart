@@ -1,6 +1,10 @@
 import 'dart:core';
 import 'dart:math';
 import 'dart:convert';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'models.freezed.dart';
+part 'models.g.dart';
 
 enum State {
   newState(0),
@@ -46,54 +50,27 @@ class ReviewLog {
 }
 
 /// Store card data
-class Card {
-  /// The time when the card is scheduled to be reviewed again
-  late DateTime due;
-  double stability = 0;
+@unfreezed
+class Card with _$Card {
+  const Card._();
 
-  /// How challenging or easy you find a specific flashcard during a review session
-  double difficulty = 0;
-  int elapsedDays = 0;
-  int scheduledDays = 0;
-  int reps = 0;
-  int lapses = 0;
-  State state = State.newState;
-  late DateTime lastReview;
+  factory Card.def(
+    DateTime due,
+    DateTime lastReview, [
+    @Default(0) double stability,
+    @Default(0) double difficulty,
+    @Default(0) int elapsedDays,
+    @Default(0) int scheduledDays,
+    @Default(0) int reps,
+    @Default(0) int lapses,
+    @Default(State.newState) State state,
+  ]) = _Card;
 
-  @override
-  String toString() {
-    return jsonEncode({
-      "due": due.toString(),
-      "stability": stability,
-      "difficulty": difficulty,
-      "elapsedDays": elapsedDays,
-      "scheduledDays": scheduledDays,
-      "reps": reps,
-      "lapses": lapses,
-      "state": state.toString(),
-      "lastReview": lastReview.toString(),
-    });
-  }
+  factory Card.fromJson(Map<String, Object?> json) => _$CardFromJson(json);
 
   /// Construct current time for due and last review
-  Card() {
-    due = DateTime.now().toUtc();
-    lastReview = DateTime.now().toUtc();
-  }
-
-  /// Helper to clone from a card
-  factory Card.copyFrom(Card card) {
-    Card newCard = Card();
-    newCard.due = card.due;
-    newCard.stability = card.stability;
-    newCard.difficulty = card.difficulty;
-    newCard.elapsedDays = card.elapsedDays;
-    newCard.scheduledDays = card.scheduledDays;
-    newCard.reps = card.reps;
-    newCard.lapses = card.lapses;
-    newCard.state = card.state;
-    newCard.lastReview = card.lastReview;
-    return newCard;
+  factory Card() {
+    return _Card(DateTime.now().toUtc(), DateTime.now().toUtc());
   }
 
   double? getRetrievability(DateTime now) {
@@ -126,10 +103,10 @@ class SchedulingCards {
   late Card easy;
 
   SchedulingCards(Card card) {
-    again = Card.copyFrom(card);
-    hard = Card.copyFrom(card);
-    good = Card.copyFrom(card);
-    easy = Card.copyFrom(card);
+    again = card.copyWith();
+    hard = card.copyWith();
+    good = card.copyWith();
+    easy = card.copyWith();
   }
 
   void updateState(State state) {

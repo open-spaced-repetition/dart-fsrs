@@ -1,3 +1,7 @@
+## 1.1.1
+
+- Add support json function on Card class
+
 ## 1.1.0
 
 - Fix coding standard.
