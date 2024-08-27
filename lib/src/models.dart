@@ -110,27 +110,33 @@ class SchedulingCards {
   }
 
   void updateState(State state) {
-    if (state == State.newState) {
-      again.state = State.learning;
-      hard.state = State.learning;
-      good.state = State.learning;
-      easy.state = State.review;
-    } else if (state == State.learning || state == State.relearning) {
-      again.state = state;
-      hard.state = state;
-      good.state = State.review;
-      easy.state = State.review;
-    } else if (state == State.review) {
-      again.state = State.relearning;
-      hard.state = State.review;
-      good.state = State.review;
-      easy.state = State.review;
-      again.lapses++;
+    switch (state) {
+      case State.newState:
+        again.state = State.learning;
+        hard.state = State.learning;
+        good.state = State.learning;
+        easy.state = State.review;
+      case State.learning:
+      case State.relearning:
+        again.state = state;
+        hard.state = state;
+        good.state = State.review;
+        easy.state = State.review;
+      case State.review:
+        again.state = State.relearning;
+        hard.state = State.review;
+        good.state = State.review;
+        easy.state = State.review;
+        again.lapses++;
     }
   }
 
-  void schedule(DateTime now, double hardInterval, double goodInterval,
-      double easyInterval) {
+  void schedule(
+    DateTime now,
+    double hardInterval,
+    double goodInterval,
+    double easyInterval,
+  ) {
     again.scheduledDays = 0;
     hard.scheduledDays = hardInterval.toInt();
     good.scheduledDays = goodInterval.toInt();
