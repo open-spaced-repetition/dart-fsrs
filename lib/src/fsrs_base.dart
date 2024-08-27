@@ -26,39 +26,42 @@ class FSRS {
     final s = SchedulingCards(card);
     s.updateState(card.state);
 
-    if (card.state == State.newState) {
-      _initDS(s);
+    switch (card.state) {
+      case State.newState:
+        _initDS(s);
 
-      s.again.due = now.add(Duration(minutes: 1));
-      s.hard.due = now.add(Duration(minutes: 5));
-      s.good.due = now.add(Duration(minutes: 10));
-      final easyInterval = _nextInterval(s.easy.stability);
-      s.easy.scheduledDays = easyInterval;
-      s.easy.due = now.add(Duration(days: easyInterval));
-    } else if (card.state == State.learning || card.state == State.relearning) {
-      final hardInterval = 0;
-      final goodInterval = _nextInterval(s.good.stability);
-      final easyInterval =
-          max(_nextInterval(s.easy.stability), goodInterval + 1);
+        s.again.due = now.add(Duration(minutes: 1));
+        s.hard.due = now.add(Duration(minutes: 5));
+        s.good.due = now.add(Duration(minutes: 10));
+        final easyInterval = _nextInterval(s.easy.stability);
+        s.easy.scheduledDays = easyInterval;
+        s.easy.due = now.add(Duration(days: easyInterval));
+      case State.learning:
+      case State.relearning:
+        final hardInterval = 0;
+        final goodInterval = _nextInterval(s.good.stability);
+        final easyInterval =
+            max(_nextInterval(s.easy.stability), goodInterval + 1);
 
-      s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
-          easyInterval.toDouble());
-    } else if (card.state == State.review) {
-      final interval = card.elapsedDays;
-      final lastD = card.difficulty;
-      final lastS = card.stability;
-      final retrievability = _forgettingCurve(interval, lastS);
-      _nextDS(s, lastD, lastS, retrievability);
+        s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
+            easyInterval.toDouble());
+      case State.review:
+        final interval = card.elapsedDays;
+        final lastD = card.difficulty;
+        final lastS = card.stability;
+        final retrievability = _forgettingCurve(interval, lastS);
+        _nextDS(s, lastD, lastS, retrievability);
 
-      var hardInterval = _nextInterval(s.hard.stability);
-      var goodInterval = _nextInterval(s.good.stability);
-      hardInterval = min(hardInterval, goodInterval);
-      goodInterval = max(goodInterval, hardInterval + 1);
-      final easyInterval =
-          max(_nextInterval(s.easy.stability), goodInterval + 1);
-      s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
-          easyInterval.toDouble());
+        var hardInterval = _nextInterval(s.hard.stability);
+        var goodInterval = _nextInterval(s.good.stability);
+        hardInterval = min(hardInterval, goodInterval);
+        goodInterval = max(goodInterval, hardInterval + 1);
+        final easyInterval =
+            max(_nextInterval(s.easy.stability), goodInterval + 1);
+        s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
+            easyInterval.toDouble());
     }
+
     return s.recordLog(card, now);
   }
 
