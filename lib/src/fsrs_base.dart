@@ -63,22 +63,22 @@ class FSRS {
   }
 
   void _initDS(SchedulingCards s) {
-    s.again.difficulty = _initDifficulty(Rating.again.val);
-    s.again.stability = _initStability(Rating.again.val);
-    s.hard.difficulty = _initDifficulty(Rating.hard.val);
-    s.hard.stability = _initStability(Rating.hard.val);
-    s.good.difficulty = _initDifficulty(Rating.good.val);
-    s.good.stability = _initStability(Rating.good.val);
-    s.easy.difficulty = _initDifficulty(Rating.easy.val);
-    s.easy.stability = _initStability(Rating.easy.val);
+    s.again.difficulty = _initDifficulty(Rating.again.index);
+    s.again.stability = _initStability(Rating.again.index);
+    s.hard.difficulty = _initDifficulty(Rating.hard.index);
+    s.hard.stability = _initStability(Rating.hard.index);
+    s.good.difficulty = _initDifficulty(Rating.good.index);
+    s.good.stability = _initStability(Rating.good.index);
+    s.easy.difficulty = _initDifficulty(Rating.easy.index);
+    s.easy.stability = _initStability(Rating.easy.index);
   }
 
   double _initStability(int r) {
-    return max(p.w[r - 1], 0.1);
+    return max(p.w[r], 0.1);
   }
 
   double _initDifficulty(int r) {
-    return min(max(p.w[4] - p.w[5] * (r - 3), 1), 10);
+    return min(max(p.w[4] - p.w[5] * (r - 2), 1), 10);
   }
 
   double _forgettingCurve(int elapsedDays, double stability) {
@@ -91,7 +91,7 @@ class FSRS {
   }
 
   double _nextDifficulty(double d, int r) {
-    final nextD = d - p.w[6] * (r - 3);
+    final nextD = d - p.w[6] * (r - 2);
     return min(max(_meanReversion(p.w[4], nextD), 1), 10);
   }
 
@@ -121,16 +121,44 @@ class FSRS {
 
   void _nextDS(
       SchedulingCards s, double lastD, double lastS, double retrievability) {
-    s.again.difficulty = _nextDifficulty(lastD, Rating.again.val);
-    s.again.stability = _nextForgetStability(lastD, lastS, retrievability);
-    s.hard.difficulty = _nextDifficulty(lastD, Rating.hard.val);
-    s.hard.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.hard);
-    s.good.difficulty = _nextDifficulty(lastD, Rating.good.val);
-    s.good.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.good);
-    s.easy.difficulty = _nextDifficulty(lastD, Rating.easy.val);
-    s.easy.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.easy);
+    s.again.difficulty = _nextDifficulty(
+      lastD,
+      Rating.again.index,
+    );
+    s.again.stability = _nextForgetStability(
+      lastD,
+      lastS,
+      retrievability,
+    );
+    s.hard.difficulty = _nextDifficulty(
+      lastD,
+      Rating.hard.index,
+    );
+    s.hard.stability = _nextRecallStability(
+      lastD,
+      lastS,
+      retrievability,
+      Rating.hard,
+    );
+    s.good.difficulty = _nextDifficulty(
+      lastD,
+      Rating.good.index,
+    );
+    s.good.stability = _nextRecallStability(
+      lastD,
+      lastS,
+      retrievability,
+      Rating.good,
+    );
+    s.easy.difficulty = _nextDifficulty(
+      lastD,
+      Rating.easy.index,
+    );
+    s.easy.stability = _nextRecallStability(
+      lastD,
+      lastS,
+      retrievability,
+      Rating.easy,
+    );
   }
 }
