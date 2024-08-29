@@ -36,9 +36,9 @@ class FSRS {
   }
 
   Map<Rating, SchedulingInfo> repeat(
-    Card card,
+    Card card, [
     DateTime? now,
-  ) {
+  ]) {
     final date = now ?? DateTime.now();
 
     card = card.copyWith();
@@ -90,6 +90,7 @@ class FSRS {
         goodInterval = max(goodInterval, hardInterval + 1);
         final easyInterval =
             max(_nextInterval(s.easy.stability), goodInterval + 1);
+
         s.schedule(date, hardInterval, goodInterval, easyInterval);
     }
 
