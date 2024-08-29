@@ -159,6 +159,11 @@ class FSRS {
     double retrievability,
     State state,
   ) {
+    s.again.difficulty = _nextDifficulty(lastD, Rating.again);
+    s.hard.difficulty = _nextDifficulty(lastD, Rating.hard);
+    s.good.difficulty = _nextDifficulty(lastD, Rating.good);
+    s.easy.difficulty = _nextDifficulty(lastD, Rating.easy);
+
     switch (state) {
       case State.learning:
       case State.relearning:
