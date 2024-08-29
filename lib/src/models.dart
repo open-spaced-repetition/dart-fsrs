@@ -35,8 +35,14 @@ class ReviewLog {
   DateTime review;
   State state;
 
-  ReviewLog(this.rating, this.scheduledDays, this.elapsedDays, this.review,
-      this.state);
+  ReviewLog(
+    this.rating,
+    this.scheduledDays,
+    this.elapsedDays,
+    this.review,
+    this.state,
+  );
+
   @override
   String toString() {
     return jsonEncode({
@@ -133,64 +139,117 @@ class SchedulingCards {
 
   void schedule(
     DateTime now,
-    double hardInterval,
-    double goodInterval,
-    double easyInterval,
+    int hardInterval,
+    int goodInterval,
+    int easyInterval,
   ) {
     again.scheduledDays = 0;
-    hard.scheduledDays = hardInterval.toInt();
-    good.scheduledDays = goodInterval.toInt();
-    easy.scheduledDays = easyInterval.toInt();
+    hard.scheduledDays = hardInterval;
+    good.scheduledDays = goodInterval;
+    easy.scheduledDays = easyInterval;
     again.due = now.add(Duration(minutes: 5));
     hard.due = (hardInterval > 0)
-        ? now.add(Duration(days: hardInterval.toInt()))
+        ? now.add(Duration(days: hardInterval))
         : now.add(Duration(minutes: 10));
-    good.due = now.add(Duration(days: goodInterval.toInt()));
-    easy.due = now.add(Duration(days: easyInterval.toInt()));
+    good.due = now.add(Duration(days: goodInterval));
+    easy.due = now.add(Duration(days: easyInterval));
   }
 
-  Map<Rating, SchedulingInfo> recordLog(Card card, DateTime now) {
-    return {
-      Rating.again: SchedulingInfo(
+  Map<Rating, SchedulingInfo> recordLog(Card card, DateTime now) => {
+        Rating.again: SchedulingInfo(
           again,
-          ReviewLog(Rating.again, again.scheduledDays, card.elapsedDays, now,
-              card.state)),
-      Rating.hard: SchedulingInfo(
+          ReviewLog(
+            Rating.again,
+            again.scheduledDays,
+            card.elapsedDays,
+            now,
+            card.state,
+          ),
+        ),
+        Rating.hard: SchedulingInfo(
           hard,
-          ReviewLog(Rating.hard, hard.scheduledDays, card.elapsedDays, now,
-              card.state)),
-      Rating.good: SchedulingInfo(
+          ReviewLog(
+            Rating.hard,
+            hard.scheduledDays,
+            card.elapsedDays,
+            now,
+            card.state,
+          ),
+        ),
+        Rating.good: SchedulingInfo(
           good,
-          ReviewLog(Rating.good, good.scheduledDays, card.elapsedDays, now,
-              card.state)),
-      Rating.easy: SchedulingInfo(
+          ReviewLog(
+            Rating.good,
+            good.scheduledDays,
+            card.elapsedDays,
+            now,
+            card.state,
+          ),
+        ),
+        Rating.easy: SchedulingInfo(
           easy,
-          ReviewLog(Rating.easy, easy.scheduledDays, card.elapsedDays, now,
-              card.state)),
-    };
-  }
+          ReviewLog(
+            Rating.easy,
+            easy.scheduledDays,
+            card.elapsedDays,
+            now,
+            card.state,
+          ),
+        ),
+      };
 }
 
 class Parameters {
-  double requestRetention = 0.9;
-  int maximumInterval = 36500;
-  List<double> w = [
-    0.4,
-    0.6,
-    2.4,
-    5.8,
-    4.93,
-    0.94,
-    0.86,
-    0.01,
-    1.49,
-    0.14,
-    0.94,
-    2.18,
-    0.05,
-    0.34,
-    1.26,
-    0.29,
-    2.61
-  ];
+  Parameters({
+    double? requestRetention = 0.9,
+    int? maximumInterval = 36500,
+    List<double>? w = const [
+      0.4072,
+      1.1829,
+      3.1262,
+      15.4722,
+      7.2102,
+      0.5316,
+      1.0651,
+      0.0234,
+      1.616,
+      0.1544,
+      1.0824,
+      1.9813,
+      0.0953,
+      0.2975,
+      2.2042,
+      0.2407,
+      2.9466,
+      0.5034,
+      0.6567,
+    ],
+  })  : requestRetention = requestRetention ?? 0.9,
+        maximumInterval = maximumInterval ?? 36500,
+        w = w ??
+            const [
+              0.4072,
+              1.1829,
+              3.1262,
+              15.4722,
+              7.2102,
+              0.5316,
+              1.0651,
+              0.0234,
+              1.616,
+              0.1544,
+              1.0824,
+              1.9813,
+              0.0953,
+              0.2975,
+              2.2042,
+              0.2407,
+              2.9466,
+              0.5034,
+              0.6567,
+            ];
+
+  double requestRetention;
+  int maximumInterval;
+  List<double> w;
 }

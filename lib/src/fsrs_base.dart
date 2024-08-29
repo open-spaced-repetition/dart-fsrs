@@ -4,23 +4,48 @@ import './models.dart';
 
 class FSRS {
   late Parameters p;
-  late double decay;
-  late double factor;
+  late final double decay;
+  late final double factor;
 
-  FSRS() {
-    p = Parameters();
+  FSRS({
+    double? requestRetention,
+    int? maximumInterval,
+    double? w,
+  }) {
+    p = Parameters(
+      requestRetention: requestRetention,
+    );
     decay = -0.5;
     factor = pow(0.9, 1 / decay) - 1;
   }
 
-  Map<Rating, SchedulingInfo> repeat(Card card, DateTime now) {
+  (Card card, ReviewLog reviewLog) reviewCard(
+    Card card,
+    Rating rating,
+    DateTime? now,
+  ) {
+    final date = now ?? DateTime.now();
+    final schedulingCards = repeat(card, date);
+
+    final reviewCard = schedulingCards[rating]!.card;
+    final reviewLog = schedulingCards[rating]!.reviewLog;
+
+    return (reviewCard, reviewLog);
+  }
+
+  Map<Rating, SchedulingInfo> repeat(
+    Card card,
+    DateTime? now,
+  ) {
+    final date = now ?? DateTime.now();
+
     card = card.copyWith();
     if (card.state == State.newState) {
       card.elapsedDays = 0;
     } else {
-      card.elapsedDays = now.difference(card.lastReview).inDays;
+      card.elapsedDays = date.difference(card.lastReview).inDays;
     }
-    card.lastReview = now;
+    card.lastReview = date;
     card.reps++;
 
     final s = SchedulingCards(card);
@@ -30,27 +55,32 @@ class FSRS {
       case State.newState:
         _initDS(s);
 
-        s.again.due = now.add(Duration(minutes: 1));
-        s.hard.due = now.add(Duration(minutes: 5));
-        s.good.due = now.add(Duration(minutes: 10));
+        s.again.due = date.add(Duration(minutes: 1));
+        s.hard.due = date.add(Duration(minutes: 5));
+        s.good.due = date.add(Duration(minutes: 10));
         final easyInterval = _nextInterval(s.easy.stability);
         s.easy.scheduledDays = easyInterval;
-        s.easy.due = now.add(Duration(days: easyInterval));
+        s.easy.due = date.add(Duration(days: easyInterval));
       case State.learning:
       case State.relearning:
+        final interval = card.elapsedDays;
+        final lastD = card.difficulty;
+        final lastS = card.stability;
+        final retrievability = _forgettingCurve(interval, lastS);
+        _nextDS(s, lastD, lastS, retrievability, card.state);
+
         final hardInterval = 0;
         final goodInterval = _nextInterval(s.good.stability);
         final easyInterval =
             max(_nextInterval(s.easy.stability), goodInterval + 1);
 
-        s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
-            easyInterval.toDouble());
+        s.schedule(date, hardInterval, goodInterval, easyInterval);
       case State.review:
         final interval = card.elapsedDays;
         final lastD = card.difficulty;
         final lastS = card.stability;
         final retrievability = _forgettingCurve(interval, lastS);
-        _nextDS(s, lastD, lastS, retrievability);
+        _nextDS(s, lastD, lastS, retrievability, card.state);
 
         var hardInterval = _nextInterval(s.hard.stability);
         var goodInterval = _nextInterval(s.good.stability);
@@ -58,53 +88,50 @@ class FSRS {
         goodInterval = max(goodInterval, hardInterval + 1);
         final easyInterval =
             max(_nextInterval(s.easy.stability), goodInterval + 1);
-        s.schedule(now, hardInterval.toDouble(), goodInterval.toDouble(),
-            easyInterval.toDouble());
+        s.schedule(date, hardInterval, goodInterval, easyInterval);
     }
 
-    return s.recordLog(card, now);
+    return s.recordLog(card, date);
   }
 
   void _initDS(SchedulingCards s) {
-    s.again.difficulty = _initDifficulty(Rating.again.val);
+    s.again.difficulty = _initDifficulty(Rating.again);
     s.again.stability = _initStability(Rating.again.val);
-    s.hard.difficulty = _initDifficulty(Rating.hard.val);
+    s.hard.difficulty = _initDifficulty(Rating.hard);
     s.hard.stability = _initStability(Rating.hard.val);
-    s.good.difficulty = _initDifficulty(Rating.good.val);
+    s.good.difficulty = _initDifficulty(Rating.good);
     s.good.stability = _initStability(Rating.good.val);
-    s.easy.difficulty = _initDifficulty(Rating.easy.val);
+    s.easy.difficulty = _initDifficulty(Rating.easy);
     s.easy.stability = _initStability(Rating.easy.val);
   }
 
-  double _initStability(int r) {
-    return max(p.w[r - 1], 0.1);
-  }
+  double _initStability(int r) => max(p.w[r - 1], 0.1);
 
-  double _initDifficulty(int r) {
-    return min(max(p.w[4] - p.w[5] * (r - 3), 1), 10);
-  }
+  double _initDifficulty(Rating r) =>
+      min(max(p.w[4] - exp(p.w[5] * (r.val - 1) + 1), 1), 10);
 
-  double _forgettingCurve(int elapsedDays, double stability) {
-    return pow(1 + factor * elapsedDays / stability, decay).toDouble();
-  }
+  double _forgettingCurve(int elapsedDays, double stability) =>
+      pow(1 + factor * elapsedDays / stability, decay).toDouble();
 
   int _nextInterval(double s) {
     final newInterval = s / factor * (pow(p.requestRetention, 1 / decay) - 1);
     return min(max(newInterval.round(), 1), p.maximumInterval);
   }
 
-  double _nextDifficulty(double d, int r) {
-    final nextD = d - p.w[6] * (r - 3);
-    return min(max(_meanReversion(p.w[4], nextD), 1), 10);
+  double _nextDifficulty(double d, Rating r) {
+    final nextD = d - p.w[6] * (r.val - 3);
+    return min(max(_meanReversion(_initDifficulty(Rating.easy), nextD), 1), 10);
   }
 
-  double _meanReversion(double init, double current) {
-    return p.w[7] * init + (1 - p.w[7]) * current;
-  }
+  double _shortTermStability(double stability, Rating rating) =>
+      stability * exp(p.w[17] * (rating.val - 3 + p.w[18]));
+
+  double _meanReversion(double init, double current) =>
+      p.w[7] * init + (1 - p.w[7]) * current;
 
   double _nextRecallStability(double d, double s, double r, Rating rating) {
-    final hardPenalty = (rating == Rating.hard) ? p.w[15] : 1;
-    final easyBonus = (rating == Rating.easy) ? p.w[16] : 1;
+    final hardPenalty = rating == Rating.hard ? p.w[15] : 1;
+    final easyBonus = rating == Rating.easy ? p.w[16] : 1;
     return s *
         (1 +
             exp(p.w[8]) *
@@ -123,17 +150,45 @@ class FSRS {
   }
 
   void _nextDS(
-      SchedulingCards s, double lastD, double lastS, double retrievability) {
-    s.again.difficulty = _nextDifficulty(lastD, Rating.again.val);
-    s.again.stability = _nextForgetStability(lastD, lastS, retrievability);
-    s.hard.difficulty = _nextDifficulty(lastD, Rating.hard.val);
-    s.hard.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.hard);
-    s.good.difficulty = _nextDifficulty(lastD, Rating.good.val);
-    s.good.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.good);
-    s.easy.difficulty = _nextDifficulty(lastD, Rating.easy.val);
-    s.easy.stability =
-        _nextRecallStability(lastD, lastS, retrievability, Rating.easy);
+    SchedulingCards s,
+    double lastD,
+    double lastS,
+    double retrievability,
+    State state,
+  ) {
+    switch (state) {
+      case State.learning:
+      case State.relearning:
+        s.again.stability = _shortTermStability(lastS, Rating.again);
+        s.hard.stability = _shortTermStability(lastS, Rating.hard);
+        s.good.stability = _shortTermStability(lastS, Rating.good);
+        s.easy.stability = _shortTermStability(lastS, Rating.easy);
+      case State.review:
+        s.again.stability = _nextForgetStability(
+          lastD,
+          lastS,
+          retrievability,
+        );
+        s.hard.stability = _nextRecallStability(
+          lastD,
+          lastS,
+          retrievability,
+          Rating.hard,
+        );
+        s.good.stability = _nextRecallStability(
+          lastD,
+          lastS,
+          retrievability,
+          Rating.good,
+        );
+        s.easy.stability = _nextRecallStability(
+          lastD,
+          lastS,
+          retrievability,
+          Rating.easy,
+        );
+      case State.newState:
+        return;
+    }
   }
 }
