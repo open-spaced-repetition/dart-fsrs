@@ -10,10 +10,12 @@ class FSRS {
   FSRS({
     double? requestRetention,
     int? maximumInterval,
-    double? w,
+    List<double>? w,
   }) {
     p = Parameters(
       requestRetention: requestRetention,
+      maximumInterval: maximumInterval,
+      w: w,
     );
     decay = -0.5;
     factor = pow(0.9, 1 / decay) - 1;
