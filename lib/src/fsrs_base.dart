@@ -2,26 +2,39 @@ import 'dart:core';
 import 'dart:math';
 import './models.dart';
 
-class FSRS {
-  late Parameters p;
-  late final double decay;
-  late final double factor;
+/// TODO: document
+class ReviewCard {
+  const ReviewCard({
+    required this.card,
+    required this.reviewLog,
+  });
 
+  /// TODO: document
+  final Card card;
+
+  /// TODO: document
+  final ReviewLog reviewLog;
+}
+
+/// TODO: document
+class FSRS {
   FSRS({
     double? requestRetention,
     int? maximumInterval,
     List<double>? w,
-  }) {
-    p = Parameters(
-      requestRetention: requestRetention,
-      maximumInterval: maximumInterval,
-      w: w,
-    );
-    decay = -0.5;
-    factor = pow(0.9, 1 / decay) - 1;
-  }
+  })  : p = Parameters(
+          requestRetention: requestRetention,
+          maximumInterval: maximumInterval,
+          w: w,
+        ),
+        factor = pow(0.9, 1 / decay) - 1;
 
-  (Card card, ReviewLog reviewLog) reviewCard(
+  final Parameters p;
+  static const double decay = -0.5;
+  final double factor;
+
+  /// TODO: document
+  ReviewCard reviewCard(
     Card card,
     Rating rating,
     DateTime? now,
@@ -32,9 +45,10 @@ class FSRS {
     final reviewCard = schedulingCards[rating]!.card;
     final reviewLog = schedulingCards[rating]!.reviewLog;
 
-    return (reviewCard, reviewLog);
+    return ReviewCard(card: reviewCard, reviewLog: reviewLog);
   }
 
+  /// TODO: document
   Map<Rating, SchedulingInfo> repeat(
     Card card, [
     DateTime? now,
@@ -97,6 +111,7 @@ class FSRS {
     return s.recordLog(card, date);
   }
 
+  /// TODO: document
   void _initDS(SchedulingCards s) {
     s.again.difficulty = _initDifficulty(Rating.again);
     s.again.stability = _initStability(Rating.again.val);
@@ -108,30 +123,38 @@ class FSRS {
     s.easy.stability = _initStability(Rating.easy.val);
   }
 
+  /// TODO: document
   double _initStability(int r) => max(p.w[r - 1], 0.1);
 
+  /// TODO: document
   double _initDifficulty(Rating r) =>
       min(max(p.w[4] - exp(p.w[5] * (r.val - 1) + 1), 1), 10);
 
+  /// TODO: document
   double _forgettingCurve(int elapsedDays, double stability) =>
       pow(1 + factor * elapsedDays / stability, decay).toDouble();
 
+  /// TODO: document
   int _nextInterval(double s) {
     final newInterval = s / factor * (pow(p.requestRetention, 1 / decay) - 1);
     return min(max(newInterval.round(), 1), p.maximumInterval);
   }
 
+  /// TODO: document
   double _nextDifficulty(double d, Rating r) {
     final nextD = d - p.w[6] * (r.val - 3);
     return min(max(_meanReversion(_initDifficulty(Rating.easy), nextD), 1), 10);
   }
 
+  /// TODO: document
   double _shortTermStability(double stability, Rating rating) =>
       stability * exp(p.w[17] * (rating.val - 3 + p.w[18]));
 
+  /// TODO: document
   double _meanReversion(double init, double current) =>
       p.w[7] * init + (1 - p.w[7]) * current;
 
+  /// TODO: document
   double _nextRecallStability(double d, double s, double r, Rating rating) {
     final hardPenalty = rating == Rating.hard ? p.w[15] : 1;
     final easyBonus = rating == Rating.easy ? p.w[16] : 1;
@@ -145,6 +168,7 @@ class FSRS {
                 easyBonus);
   }
 
+  /// TODO: document
   double _nextForgetStability(double d, double s, double r) {
     return p.w[11] *
         pow(d, -p.w[12]) *
@@ -152,6 +176,7 @@ class FSRS {
         exp((1 - r) * p.w[14]);
   }
 
+  /// TODO: document
   void _nextDS(
     SchedulingCards s,
     double lastD,

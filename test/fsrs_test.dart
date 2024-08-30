@@ -27,7 +27,7 @@ void main() {
   test('Review Card', () {
     final f = FSRS(w: testW);
     var card = Card();
-    var now = DateTime(2022, 11, 29, 12, 30).toUtc();
+    var now = DateTime.utc(2022, 11, 29, 12, 30);
 
     const ratings = [
       Rating.good,
@@ -48,7 +48,8 @@ void main() {
     List<int> ivlHistory = [];
 
     for (final rating in ratings) {
-      (card, _) = f.reviewCard(card, rating, now);
+      final reviewCard = f.reviewCard(card, rating, now);
+      card = reviewCard.card;
       final ivl = card.scheduledDays;
       ivlHistory.add(ivl);
       now = card.due;
@@ -74,7 +75,7 @@ void main() {
   test('Memo State', () {
     final f = FSRS(w: testW);
     var card = Card();
-    var now = DateTime(2022, 11, 29, 12, 30).toUtc();
+    var now = DateTime.utc(2022, 11, 29, 12, 30);
 
     var schedulingCards = f.repeat(card, now);
     const reviews = [
@@ -163,7 +164,8 @@ void main() {
       final List<int> ivlHistory = [];
 
       for (final rating in ratings) {
-        (card, _) = f.reviewCard(card, rating, now);
+        final reviewCard = f.reviewCard(card, rating, now);
+        card = reviewCard.card;
         final ivl = card.scheduledDays;
         ivlHistory.add(ivl);
         now = card.due;
@@ -204,11 +206,12 @@ void main() {
       );
 
       var card = Card();
-      var now = DateTime(2022, 11, 29, 12, 30);
+      var now = DateTime.utc(2022, 11, 29, 12, 30);
       final List<int> ivlHistory = [];
 
       for (final rating in ratings) {
-        (card, _) = f.reviewCard(card, rating, now);
+        final reviewCard = f.reviewCard(card, rating, now);
+        card = reviewCard.card;
         final ivl = card.scheduledDays;
         ivlHistory.add(ivl);
         now = card.due;

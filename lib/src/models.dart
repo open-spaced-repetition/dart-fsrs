@@ -6,10 +6,18 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'models.freezed.dart';
 part 'models.g.dart';
 
+/// TODO: document
 enum State {
+  /// TODO: document
   newState(0),
+
+  /// TODO: document
   learning(1),
+
+  /// TODO: document
   review(2),
+
+  /// TODO: document
   relearning(3);
 
   const State(this.val);
@@ -17,10 +25,18 @@ enum State {
   final int val;
 }
 
+/// TODO: document
 enum Rating {
+  /// TODO: document
   again(1),
+
+  /// TODO: document
   hard(2),
+
+  /// TODO: document
   good(3),
+
+  /// TODO: document
   easy(4);
 
   const Rating(this.val);
@@ -28,13 +44,8 @@ enum Rating {
   final int val;
 }
 
+/// TODO: document
 class ReviewLog {
-  Rating rating;
-  int scheduledDays;
-  int elapsedDays;
-  DateTime review;
-  State state;
-
   ReviewLog(
     this.rating,
     this.scheduledDays,
@@ -42,6 +53,21 @@ class ReviewLog {
     this.review,
     this.state,
   );
+
+  /// TODO: document
+  Rating rating;
+
+  /// TODO: document
+  int scheduledDays;
+
+  /// TODO: document
+  int elapsedDays;
+
+  /// TODO: document
+  DateTime review;
+
+  /// TODO: document
+  State state;
 
   @override
   String toString() {
@@ -93,6 +119,7 @@ class Card with _$Card {
   }
 }
 
+/// TODO: document
 /// Store card and review log info
 class SchedulingInfo {
   late Card card;
@@ -101,6 +128,7 @@ class SchedulingInfo {
   SchedulingInfo(this.card, this.reviewLog);
 }
 
+/// TODO: document
 /// Calculate next review
 class SchedulingCards {
   late Card again;
@@ -115,6 +143,7 @@ class SchedulingCards {
     easy = card.copyWith();
   }
 
+  /// TODO: document
   void updateState(State state) {
     switch (state) {
       case State.newState:
@@ -137,6 +166,7 @@ class SchedulingCards {
     }
   }
 
+  /// TODO: document
   void schedule(
     DateTime now,
     int hardInterval,
@@ -155,6 +185,7 @@ class SchedulingCards {
     easy.due = now.add(Duration(days: easyInterval));
   }
 
+  /// TODO: document
   Map<Rating, SchedulingInfo> recordLog(Card card, DateTime now) => {
         Rating.again: SchedulingInfo(
           again,
@@ -199,6 +230,7 @@ class SchedulingCards {
       };
 }
 
+/// TODO: document
 class Parameters {
   Parameters({
     double? requestRetention,
@@ -229,7 +261,12 @@ class Parameters {
               0.6567,
             ];
 
+  /// TODO: document
   double requestRetention;
+
+  /// TODO: document
   int maximumInterval;
+
+  /// TODO: document
   List<double> w;
 }
