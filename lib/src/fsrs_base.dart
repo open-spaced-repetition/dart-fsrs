@@ -3,29 +3,15 @@ import 'dart:math';
 import './models.dart';
 
 /// TODO: document
-class ReviewCard {
-  const ReviewCard({
-    required this.card,
-    required this.reviewLog,
-  });
-
-  /// TODO: document
-  final Card card;
-
-  /// TODO: document
-  final ReviewLog reviewLog;
-}
-
-/// TODO: document
 class FSRS {
   FSRS({
     double? requestRetention,
     int? maximumInterval,
-    List<double>? w,
+    List<double>? weight,
   })  : p = Parameters(
           requestRetention: requestRetention,
           maximumInterval: maximumInterval,
-          w: w,
+          weight: weight,
         ),
         factor = pow(0.9, 1 / decay) - 1;
 
@@ -34,7 +20,7 @@ class FSRS {
   final double factor;
 
   /// TODO: document
-  ReviewCard reviewCard(
+  ({Card card, ReviewLog reviewLog}) reviewCard(
     Card card,
     Rating rating,
     DateTime? now,
@@ -45,7 +31,7 @@ class FSRS {
     final reviewCard = schedulingCards[rating]!.card;
     final reviewLog = schedulingCards[rating]!.reviewLog;
 
-    return ReviewCard(card: reviewCard, reviewLog: reviewLog);
+    return (card: reviewCard, reviewLog: reviewLog);
   }
 
   /// TODO: document
@@ -124,11 +110,11 @@ class FSRS {
   }
 
   /// TODO: document
-  double _initStability(int r) => max(p.w[r - 1], 0.1);
+  double _initStability(int r) => max(p.weight[r - 1], 0.1);
 
   /// TODO: document
   double _initDifficulty(Rating r) =>
-      min(max(p.w[4] - exp(p.w[5] * (r.val - 1) + 1), 1), 10);
+      min(max(p.weight[4] - exp(p.weight[5] * (r.val - 1) + 1), 1), 10);
 
   /// TODO: document
   double _forgettingCurve(int elapsedDays, double stability) =>
@@ -142,38 +128,38 @@ class FSRS {
 
   /// TODO: document
   double _nextDifficulty(double d, Rating r) {
-    final nextD = d - p.w[6] * (r.val - 3);
+    final nextD = d - p.weight[6] * (r.val - 3);
     return min(max(_meanReversion(_initDifficulty(Rating.easy), nextD), 1), 10);
   }
 
   /// TODO: document
   double _shortTermStability(double stability, Rating rating) =>
-      stability * exp(p.w[17] * (rating.val - 3 + p.w[18]));
+      stability * exp(p.weight[17] * (rating.val - 3 + p.weight[18]));
 
   /// TODO: document
   double _meanReversion(double init, double current) =>
-      p.w[7] * init + (1 - p.w[7]) * current;
+      p.weight[7] * init + (1 - p.weight[7]) * current;
 
   /// TODO: document
   double _nextRecallStability(double d, double s, double r, Rating rating) {
-    final hardPenalty = rating == Rating.hard ? p.w[15] : 1;
-    final easyBonus = rating == Rating.easy ? p.w[16] : 1;
+    final hardPenalty = rating == Rating.hard ? p.weight[15] : 1;
+    final easyBonus = rating == Rating.easy ? p.weight[16] : 1;
     return s *
         (1 +
-            exp(p.w[8]) *
+            exp(p.weight[8]) *
                 (11 - d) *
-                pow(s, -p.w[9]) *
-                (exp((1 - r) * p.w[10]) - 1) *
+                pow(s, -p.weight[9]) *
+                (exp((1 - r) * p.weight[10]) - 1) *
                 hardPenalty *
                 easyBonus);
   }
 
   /// TODO: document
   double _nextForgetStability(double d, double s, double r) {
-    return p.w[11] *
-        pow(d, -p.w[12]) *
-        (pow(s + 1, p.w[13]) - 1) *
-        exp((1 - r) * p.w[14]);
+    return p.weight[11] *
+        pow(d, -p.weight[12]) *
+        (pow(s + 1, p.weight[13]) - 1) *
+        exp((1 - r) * p.weight[14]);
   }
 
   /// TODO: document

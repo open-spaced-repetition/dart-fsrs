@@ -25,7 +25,7 @@ const testW = [
 
 void main() {
   test('Review Card', () {
-    final f = FSRS(w: testW);
+    final f = FSRS(weight: testW);
     var card = Card();
     var now = DateTime.utc(2022, 11, 29, 12, 30);
 
@@ -73,7 +73,7 @@ void main() {
   });
 
   test('Memo State', () {
-    final f = FSRS(w: testW);
+    final f = FSRS(weight: testW);
     var card = Card();
     var now = DateTime.utc(2022, 11, 29, 12, 30);
 
@@ -136,7 +136,7 @@ void main() {
       final f = FSRS(
         requestRetention: 0.9,
         maximumInterval: 36500,
-        w: [
+        weight: [
           0.4197,
           1.1869,
           3.0412,
@@ -202,7 +202,7 @@ void main() {
       final f = FSRS(
         requestRetention: requestRetention,
         maximumInterval: maximumInterval,
-        w: w,
+        weight: w,
       );
 
       var card = Card();
@@ -217,7 +217,7 @@ void main() {
         now = card.due;
       }
 
-      expect(f.p.w, w);
+      expect(f.p.weight, w);
       expect(f.p.requestRetention, requestRetention);
       expect(f.p.maximumInterval, maximumInterval);
     });
