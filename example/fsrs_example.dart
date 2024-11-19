@@ -26,7 +26,7 @@ void main() {
   cardGood.scheduledDays;
   cardEasy.scheduledDays;
 
-  // Update the card after rating `Good`:
+  // Update the card after rating `Easy`:
   card = schedulingCards[Rating.easy]!.card;
 
   // Get the review log after rating `Good`:
