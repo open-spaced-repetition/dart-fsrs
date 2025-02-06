@@ -91,3 +91,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## More Info:
 
 Port from [open-spaced-repetition/py-fsrs@1b4cbe4](https://github.com/open-spaced-repetition/py-fsrs/tree/1b4cbe4)
+
+## Online development
+
+<https://idx.google.com/import>
