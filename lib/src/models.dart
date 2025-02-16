@@ -14,6 +14,9 @@ enum State {
 
   const State(this.val);
 
+  /// Deprecated. Duplicate of [index].
+  /// Use [index] instead.
+  @Deprecated('Use [index] instead')
   final int val;
 }
 
@@ -25,6 +28,9 @@ enum Rating {
 
   const Rating(this.val);
 
+  /// Deprecated. Duplicate of [index].
+  /// Use [index] + 1 instead.
+  @Deprecated('Use [index] + 1 instead')
   final int val;
 }
 
