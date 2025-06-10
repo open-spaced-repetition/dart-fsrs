@@ -1,87 +1,211 @@
-<img src="https://avatars.githubusercontent.com/u/96821265?s=200&v=4" height="100" alt="Open Spaced Repetition logo"/>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/open-spaced-repetition/py-fsrs/main/osr_logo.png" height="100" alt="Open Spaced Repetition logo"/>
+</div>
+<div align="center">
 
-&nbsp;
+# Dart-FSRS
 
-[![Pub Version](https://img.shields.io/pub/v/fsrs?label=pub.dev&labelColor=333940&logo=dart)](https://pub.dev/packages/fsrs)
-[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://github.com/open-spaced-repetition/dart-fsrs/blob/main/LICENSE)
-[![CI Status](https://img.shields.io/github/actions/workflow/status/open-spaced-repetition/dart-fsrs/dart.yml?branch=main&label=CI&labelColor=333940&logo=github)](https://github.com/open-spaced-repetition/dart-fsrs/actions/workflows/dart.yml)
+</div>
+<div align="center">
+  <em>🧠🔄 Build your own Spaced Repetition System in Dart 🧠🔄   </em>
+</div>
+<br />
+<div align="center" style="text-decoration: none;">
+    <a href="https://pub.dev/packages/fsrs"><img src="https://img.shields.io/pub/v/fsrs?label=pub.dev&labelColor=333940&logo=dart"></a>
+    <a href="https://github.com/open-spaced-repetition/py-fsrs/blob/main/LICENSE" style="text-decoration: none;"><img src="https://img.shields.io/badge/License-MIT-brightgreen.svg"></a>
+    <a href="https://github.com/open-spaced-repetition/dart-fsrs/actions/workflows/dart.yml" style="text-decoration: none;"><img src="https://img.shields.io/github/actions/workflow/status/open-spaced-repetition/dart-fsrs/dart.yml?branch=main&label=CI&labelColor=333940&logo=github"></a>
+</div>
+<br />
 
-## About The Project
 
-dart-fsrs is a Dart Package implements [Free Spaced Repetition Scheduler algorithm](https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler). It helps developers apply FSRS in their flashcard apps.
+**Dart-FSRS is a dart package that allows developers to easily create their own spaced repetition system using the <a href="https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler">Free Spaced Repetition Scheduler algorithm</a>.**
 
-## Getting Started
 
+## Table of Contents
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Usage](#usage)
+- [Reference](#reference)
+- [License](#license)
+- [More Info](#more-info)
+- [Online development](#online-development)
+
+## Installation
+
+Add the package to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  fsrs: ^1.0.0
 ```
+
+and then run:
+
+```bash
+dart pub get
+```
+
+Or just install it with dart cli:
+
+```bash
 dart pub add fsrs
 ```
 
-## Usage
+## Quickstart
 
-Create a card and review it at a given time:
+Import and initialize the FSRS scheduler
 
 ```dart
 import 'package:fsrs/fsrs.dart';
 
-var f = FSRS();
-var card = Card();
-var now = DateTime(2022, 11, 29, 12, 30, 0, 0);
-var schedulingCards = f.repeat(card, now);
-printSchedulingCards(schedulingCards);
+var scheduler = Scheduler();
 ```
 
-There are four ratings:
-
+Create a new Card object
 ```dart
-Rating.again; // forget; incorrect response
-Rating.hard; // recall; correct response recalled with serious difficulty
-Rating.good; // recall; correct response after a hesitation
-Rating.easy; // recall; perfect response
+// note: all new cards are 'due' immediately upon creation
+final card = Card(cardId: 1);
+// alternatively, you can let fsrs generate a unique ID for you
+final card = await Card.create();
 ```
 
-Get the new state of card for each rating:
-
+Choose a rating and review the card with the scheduler
 ```dart
-var cardAgain = schedulingCards[Rating.again]!.card;
-var cardHard = schedulingCards[Rating.hard]!.card;
-var cardGood = schedulingCards[Rating.good]!.card;
-var cardEasy = schedulingCards[Rating.easy]!.card;
+// Rating.Again (==1) forgot the card
+// Rating.Hard (==2) remembered the card with serious difficulty
+// Rating.Good (==3) remembered the card after a hesitation
+// Rating.Easy (==4) remembered the card easily
+
+final rating = Rating.good;
+
+final (:card, :reviewLog) = scheduler.reviewCard(card, rating);
+
+print("Card rated ${reviewLog.rating} at ${reviewLog.reviewDateTime}");
+// > Card rated 3 at 2024-11-30 17:46:58.856497Z
 ```
 
-Get the scheduled days for each rating:
-
+See when the card is due next
 ```dart
-cardAgain.scheduledDays;
-cardHard.scheduledDays;
-cardGood.scheduledDays;
-cardEasy.scheduledDays;
+final due = card.due;
+
+// how much time between when the card is due and now
+final timeDelta = due.difference(DateTime.now());
+
+print("Card due on $due");
+print("Card due in ${timeDelta.inSeconds} seconds");
+
+// > Card due on 2024-12-01 17:46:58.856497Z
+// > Card due in 599 seconds
 ```
 
-Update the card after rating `Good`:
+## Usage
+
+### Custom parameters
+
+You can initialize the FSRS scheduler with your own custom parameters.
 
 ```dart
-card = schedulingCards[Rating.good]!.card;
+// note: the following arguments are also the defaults
+scheduler = Scheduler(
+  parameters: [
+    0.2172,
+    1.1771,
+    3.2602,
+    16.1507,
+    7.0114,
+    0.57,
+    2.0966,
+    0.0069,
+    1.5261,
+    0.112,
+    1.0178,
+    1.849,
+    0.1133,
+    0.3127,
+    2.2934,
+    0.2191,
+    3.0004,
+    0.7536,
+    0.3332,
+    0.1437,
+    0.2,
+  ],
+  desiredRetention: 0.9,
+  learningSteps: [
+    Duration(minutes: 1),
+    Duration(minutes: 10),
+  ],
+  relearningSteps: [
+    Duration(minutes: 10),
+  ],
+  maximumInterval: 36500,
+  enableFuzzing: true,
+);
 ```
 
-Get the review log after rating `Good`:
+#### Explanation of parameters
+
+`parameters` are a set of 21 model weights that affect how the FSRS scheduler will schedule future reviews. If you're not familiar with optimizing FSRS, it is best not to modify these default values.
+
+`desired_retention` is a value between 0 and 1 that sets the desired minimum retention rate for cards when scheduled with the scheduler. For example, with the default value of `desired_retention=0.9`, a card will be scheduled at a time in the future when the predicted probability of the user correctly recalling that card falls to 90%. A higher `desired_retention` rate will lead to more reviews and a lower rate will lead to fewer reviews.
+
+`learning_steps` are custom time intervals that schedule new cards in the Learning state. By default, cards in the Learning state have short intervals of 1 minute then 10 minutes. You can also disable `learning_steps` with `Scheduler(learning_steps=())`
+
+`relearning_steps` are analogous to `learning_steps` except they apply to cards in the Relearning state. Cards transition to the Relearning state if they were previously in the Review state, then were rated Again - this is also known as a 'lapse'. If you specify `Scheduler(relearning_steps=())`, cards in the Review state, when lapsed, will not move to the Relearning state, but instead stay in the Review state.
+
+`maximum_interval` sets the cap for the maximum days into the future the scheduler is capable of scheduling cards. For example, if you never want the scheduler to schedule a card more than one year into the future, you'd set `Scheduler(maximum_interval=365)`.
+
+`enable_fuzzing`, if set to True, will apply a small amount of random 'fuzz' to calculated intervals. For example, a card that would've been due in 50 days, after fuzzing, might be due in 49, or 51 days.
+
+### Timezone
+
+**Dart-FSRS uses UTC only.**
+
+You can still specify custom datetimes, but they must use the UTC timezone.
+
+### Retrievability
+
+You can calculate the current probability of correctly recalling a card (its 'retrievability') with
 
 ```dart
-var reviewLog = schedulingCards[Rating.good]!.reviewLog;
+final retrievability = scheduler.getCardRetrievability(card);
+
+print("There is a $retrievability probability that this card is remembered.");
+// > There is a 0.94 probability that this card is remembered.
 ```
 
-Get the due date for card:
+### Serialization
+
+`Scheduler`, `Card` and `ReviewLog` classes are all JSON-serializable via their `toMap` and `fromMap` methods for easy database storage:
 
 ```dart
-due = card.due
+// serialize before storage
+final schedulerDict = scheduler.toMap();
+final cardDict = card.toMap();
+final reviewLogDict = reviewLog.toMap();
+
+// deserialize from dict
+final newScheduler = Scheduler.fromMap(schedulerDict);
+final newCard = Card.fromMap(cardDict);
+final newReviewLog = ReviewLog.fromMap(reviewLogDict);
 ```
 
-There are four states:
 
+## Reference
+
+Card objects have one of three possible states
 ```dart
-State.newState; // Never been studied
-State.learning; // Been studied for the first time recently
-State.review; // Graduate from learning state
-State.relearning; // Forgotten in review state
+State.Learning # (==1) new card being studied for the first time
+State.Review # (==2) card that has "graduated" from the Learning state
+State.Relearning # (==3) card that has "lapsed" from the Review state
+```
+
+There are four possible ratings when reviewing a card object:
+```dart
+Rating.Again # (==1) forgot the card
+Rating.Hard # (==2) remembered the card with serious difficulty
+Rating.Good # (==3) remembered the card after a hesitation
+Rating.Easy # (==4) remembered the card easily
 ```
 
 ## License
@@ -90,7 +214,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## More Info:
 
-Port from [open-spaced-repetition/py-fsrs@1b4cbe4](https://github.com/open-spaced-repetition/py-fsrs/tree/1b4cbe4)
+Port from [open-spaced-repetition/py-fsrs@6fd0857](https://github.com/open-spaced-repetition/py-fsrs/tree/6fd0857)
 
 ## Online development
 
