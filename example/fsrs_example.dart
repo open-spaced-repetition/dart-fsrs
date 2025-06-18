@@ -1,46 +1,81 @@
 import 'package:fsrs/fsrs.dart';
 
-void main() {
-  var f = FSRS();
-  var card = Card();
-  var now = DateTime(2022, 11, 29, 12, 30, 0, 0);
-  print("Now: $now");
-  var schedulingCards = f.repeat(card, now);
-  // printSchedulingCards(schedulingCards);
+void main() async {
+  // note: the following arguments are also the defaults
+  var scheduler = Scheduler(
+    parameters: [
+      0.2172,
+      1.1771,
+      3.2602,
+      16.1507,
+      7.0114,
+      0.57,
+      2.0966,
+      0.0069,
+      1.5261,
+      0.112,
+      1.0178,
+      1.849,
+      0.1133,
+      0.3127,
+      2.2934,
+      0.2191,
+      3.0004,
+      0.7536,
+      0.3332,
+      0.1437,
+      0.2,
+    ],
+    desiredRetention: 0.9,
+    learningSteps: [
+      Duration(minutes: 1),
+      Duration(minutes: 10),
+    ],
+    relearningSteps: [
+      Duration(minutes: 10),
+    ],
+    maximumInterval: 36500,
+    enableFuzzing: true,
+  );
 
-  // There are four ratings:
-  Rating.again; // forget; incorrect response
-  Rating.hard; // recall; correct response recalled with serious difficulty
-  Rating.good; // recall; correct response after a hesitation
-  Rating.easy; // recall; perfect response
+  final cardInitial = await Card.create();
 
-  // Get the new state of card for each rating:
-  var cardAgain = schedulingCards[Rating.again]!.card;
-  var cardHard = schedulingCards[Rating.hard]!.card;
-  var cardGood = schedulingCards[Rating.good]!.card;
-  var cardEasy = schedulingCards[Rating.easy]!.card;
+  // Rating.Again (==1) forgot the card
+  // Rating.Hard (==2) remembered the card with serious difficulty
+  // Rating.Good (==3) remembered the card after a hesitation
+  // Rating.Easy (==4) remembered the card easily
 
-  // Get the scheduled days for each rating:
-  cardAgain.scheduledDays;
-  cardHard.scheduledDays;
-  cardGood.scheduledDays;
-  cardEasy.scheduledDays;
+  final rating = Rating.again;
 
-  // Update the card after rating `Easy`:
-  card = schedulingCards[Rating.easy]!.card;
+  final (:card, :reviewLog) = scheduler.reviewCard(cardInitial, rating);
 
-  // Get the review log after rating `Good`:
-  // ignore: unused_local_variable
-  var reviewLog = schedulingCards[Rating.good]!.reviewLog;
+  print("Card rated ${reviewLog.rating} at ${reviewLog.reviewDateTime}");
 
-  // Get the due date for card:
-  // ignore: unused_local_variable
-  var due = card.due;
-  print("Due: $due");
+  final due = card.due;
 
-  // There are four states:
-  State.newState; // Never been studied
-  State.learning; // Been studied for the first time recently
-  State.review; // Graduate from learning state
-  State.relearning; // Forgotten in review state
+  // how much time between when the card is due and now
+  final timeDelta = due.difference(DateTime.now());
+
+  print("Card due on $due");
+  print("Card due in ${timeDelta.inSeconds} seconds");
+
+  final retrievability = scheduler.getCardRetrievability(card);
+
+  print("There is a $retrievability probability that this card is remembered.");
+
+  // serialize before storage
+  final schedulerDict = scheduler.toMap();
+  final cardDict = card.toMap();
+  final reviewLogDict = reviewLog.toMap();
+
+  // deserialize from dict
+  final newScheduler = Scheduler.fromMap(schedulerDict);
+  final newCard = Card.fromMap(cardDict);
+  final newReviewLog = ReviewLog.fromMap(reviewLogDict);
+
+  print(
+      "Are the original and deserialized schedulers equal? ${scheduler == newScheduler}");
+  print("Are the original and deserialized cards equal? ${card == newCard}");
+  print(
+      "Are the original and deserialized review logs equal? ${reviewLog == newReviewLog}");
 }
