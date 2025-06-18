@@ -1,3 +1,7 @@
+## 2.0.0
+
+- FSRS-6
+
 ## 1.1.1
 
 - Add support json function on Card class
