@@ -17,11 +17,10 @@
 </div>
 <br />
 
-
 **Dart-FSRS is a dart package that allows developers to easily create their own spaced repetition system using the <a href="https://github.com/open-spaced-repetition/free-spaced-repetition-scheduler">Free Spaced Repetition Scheduler algorithm</a>.**
 
-
 ## Table of Contents
+
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Usage](#usage)
@@ -36,7 +35,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fsrs: ^1.0.0
+  fsrs: ^2.0.0
 ```
 
 and then run:
@@ -62,6 +61,7 @@ var scheduler = Scheduler();
 ```
 
 Create a new Card object
+
 ```dart
 // note: all new cards are 'due' immediately upon creation
 final card = Card(cardId: 1);
@@ -70,6 +70,7 @@ final card = await Card.create();
 ```
 
 Choose a rating and review the card with the scheduler
+
 ```dart
 // Rating.Again (==1) forgot the card
 // Rating.Hard (==2) remembered the card with serious difficulty
@@ -85,6 +86,7 @@ print("Card rated ${reviewLog.rating} at ${reviewLog.reviewDateTime}");
 ```
 
 See when the card is due next
+
 ```dart
 final due = card.due;
 
@@ -190,10 +192,10 @@ final newCard = Card.fromMap(cardDict);
 final newReviewLog = ReviewLog.fromMap(reviewLogDict);
 ```
 
-
 ## Reference
 
 Card objects have one of three possible states
+
 ```dart
 State.Learning # (==1) new card being studied for the first time
 State.Review # (==2) card that has "graduated" from the Learning state
@@ -201,6 +203,7 @@ State.Relearning # (==3) card that has "lapsed" from the Review state
 ```
 
 There are four possible ratings when reviewing a card object:
+
 ```dart
 Rating.Again # (==1) forgot the card
 Rating.Hard # (==2) remembered the card with serious difficulty
