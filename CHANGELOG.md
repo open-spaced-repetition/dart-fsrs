@@ -1,3 +1,7 @@
+## 2.0.1
+
+- fix: #24 compatability with flutter_test from sdk
+
 ## 2.0.0
 
 - FSRS-6
